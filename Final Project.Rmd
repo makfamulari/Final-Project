@@ -1,0 +1,64 @@
+---
+title: "Final Project"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(janitor)
+library(readxl)
+library(dplyr)
+library(usmap)
+library(readr)
+library(sf)
+library(ggplot2)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(gt)
+```
+
+```{r echo = FALSE, include = FALSE}
+attainment14_18 <- read_csv("nhgis0001_csv/nhgis0001_ds239_20185_2018_county.csv") %>% 
+  clean_names()
+
+attainment14_18 <- attainment14_18 %>% 
+  select(year, state, county, name_e, ajypm017:ajypm023) %>% 
+  rename(high_school_diploma = ajypm017,
+         GED = ajypm018,
+         one_year_college = ajypm019,
+         no_degree = ajypm020,
+         assosiate = ajypm021,
+         bachelor = ajypm022,
+         master = ajypm023) %>% 
+  pivot_longer(cols = c(high_school_diploma,
+                        GED,
+                        no_degree,
+                        bachelor,
+                        master),
+               names_to = "education_level",
+               values_to = "number")
+       
+```
+
+```{r echo = FALSE}
+datagraph <- attainment14_18 %>% 
+  filter(state == "Alabama") %>% 
+  filter(county == "Autauga County") %>% 
+  select(education_level, number) 
+
+x <- ggplot(datagraph, aes(education_level, number)) +
+  geom_col() + 
+  labs(title = "Educational Attainment in Autauga County, Alabama",
+       caption = "Source: NHGIS",
+       x = "Education Level",
+       y = "Number of Citizens" 
+       ) +
+  scale_x_discrete(labels = c(
+    "Bachelor's", "GED", "High School Diploma", "Master's", "Some college"
+  )) +
+  theme_light()
+
+x
+```
+
+
